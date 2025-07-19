@@ -1,12 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { MetricsOverview } from "@/components/MetricsOverview";
+import { TrendingTopics } from "@/components/TrendingTopics";
+import { InfluencerList } from "@/components/InfluencerList";
+import { RecentReports } from "@/components/RecentReports";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+      <DashboardHeader />
+      
+      <main className="p-6 space-y-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h2>
+          <p className="text-muted-foreground">Monitor your brand's social media presence across all platforms</p>
+        </div>
+
+        <MetricsOverview />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <TrendingTopics />
+          <RecentReports />
+        </div>
+
+        <InfluencerList />
+      </main>
     </div>
   );
 };
