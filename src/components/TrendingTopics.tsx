@@ -6,6 +6,7 @@ import { fetchYouTubeTrends, fetchInstagramTrends, fetchLinkedInTrends } from "@
 import { Youtube, Instagram, Linkedin } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const getSentimentColor = (sentiment: string) => {
   switch (sentiment) {
@@ -61,6 +62,20 @@ export const TrendingTopics = () => {
                   <span>Engagement: {topic.engagement}%</span>
                   <Progress value={topic.engagement} className="h-2 bg-[#ff0000]/10 w-24" />
                 </div>
+                {/* YouTube Influencer Profile (if available) */}
+                {topic.influencer && (
+                  <div className="flex items-center gap-4 mt-4 md:mt-0 bg-[#ff0000]/5 rounded-xl p-3 w-full md:w-auto">
+                    <Avatar className="w-14 h-14 border-2 border-[#ff0000]">
+                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-bold text-[#ff0000] text-lg">{topic.influencer.name}</div>
+                      <div className="text-xs text-muted-foreground">{topic.influencer.handle}</div>
+                      <div className="text-xs text-[#ff0000] font-semibold mt-1">{topic.influencer.subscribers} subscribers</div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -84,23 +99,25 @@ export const TrendingTopics = () => {
                   <span>Engagement: {topic.engagement}%</span>
                   <Progress value={topic.engagement} className="h-2 bg-[#0077b5]/10 w-24" />
                 </div>
-                {/* Influencer Profile & Recent Activities */}
+                {/* LinkedIn Influencer Profile (if available) */}
                 {topic.influencer && (
-                  <div className="mt-3 p-3 bg-blue-50 rounded-xl w-full md:w-auto">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <img src={topic.influencer.avatar} alt={topic.influencer.name} className="w-10 h-10 rounded-full border-2 border-[#0077b5]" />
-                      <div>
-                        <div className="font-bold text-[#0077b5]">{topic.influencer.name}</div>
-                        <div className="text-xs text-muted-foreground">{topic.influencer.handle}</div>
+                  <div className="flex flex-col md:flex-row items-center gap-4 mt-4 md:mt-0 bg-[#0077b5]/5 rounded-xl p-3 w-full md:w-auto">
+                    <Avatar className="w-14 h-14 border-2 border-[#0077b5]">
+                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-bold text-[#0077b5] text-lg">{topic.influencer.name}</div>
+                      <div className="text-xs text-muted-foreground">{topic.influencer.headline}</div>
+                      <div className="text-xs text-[#0077b5] font-semibold mt-1">{topic.influencer.company}</div>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <div className="font-semibold text-xs mb-1">Recent Activities:</div>
+                        <ul className="list-disc ml-5 text-xs">
+                          {topic.influencer.activities?.map((act: string, i: number) => (
+                            <li key={i}>{act}</li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-xs mb-1">Recent Activities:</div>
-                      <ul className="list-disc ml-5 text-xs">
-                        {topic.influencer.activities?.map((act: string, i: number) => (
-                          <li key={i}>{act}</li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
                 )}
@@ -127,23 +144,25 @@ export const TrendingTopics = () => {
                   <span>Engagement: {topic.engagement}%</span>
                   <Progress value={topic.engagement} className="h-2 bg-[#e1306c]/10 w-24" />
                 </div>
-                {/* Influencer Profile & Recent Activities */}
+                {/* Instagram Influencer Profile (if available) */}
                 {topic.influencer && (
-                  <div className="mt-3 p-3 bg-pink-50 rounded-xl w-full md:w-auto">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <img src={topic.influencer.avatar} alt={topic.influencer.name} className="w-10 h-10 rounded-full border-2 border-[#e1306c]" />
-                      <div>
-                        <div className="font-bold text-[#e1306c]">{topic.influencer.name}</div>
-                        <div className="text-xs text-muted-foreground">{topic.influencer.handle}</div>
+                  <div className="flex flex-col md:flex-row items-center gap-4 mt-4 md:mt-0 bg-[#e1306c]/5 rounded-xl p-3 w-full md:w-auto">
+                    <Avatar className="w-16 h-16 border-4 border-gradient-to-tr from-[#e1306c] via-[#fdc468] to-[#fa7e1e]">
+                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-bold text-[#e1306c] text-lg">{topic.influencer.name}</div>
+                      <div className="text-xs text-muted-foreground">@{topic.influencer.handle}</div>
+                      <div className="text-xs text-[#e1306c] font-semibold mt-1">{topic.influencer.followers} followers</div>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <div className="font-semibold text-xs mb-1">Recent Posts:</div>
+                        <div className="grid grid-cols-3 gap-1">
+                          {topic.influencer.posts?.slice(0, 3).map((img: string, i: number) => (
+                            <img key={i} src={img} alt="post" className="rounded-lg w-16 h-16 object-cover" />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-xs mb-1">Recent Activities:</div>
-                      <ul className="list-disc ml-5 text-xs">
-                        {topic.influencer.activities?.map((act: string, i: number) => (
-                          <li key={i}>{act}</li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
                 )}
