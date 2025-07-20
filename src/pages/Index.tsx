@@ -3,6 +3,7 @@ import { MetricsOverview } from "@/components/MetricsOverview";
 import { TrendingTopics } from "@/components/TrendingTopics";
 import { InfluencerList } from "@/components/InfluencerList";
 import { RecentReports } from "@/components/RecentReports";
+import { WorkflowTrigger } from "@/components/WorkflowTrigger";
 
 const Index = () => {
   return (
@@ -14,6 +15,8 @@ const Index = () => {
           <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h2>
           <p className="text-muted-foreground">Monitor your brand's social media presence across all platforms</p>
         </div>
+
+        <WorkflowTrigger />
 
         <MetricsOverview />
 
