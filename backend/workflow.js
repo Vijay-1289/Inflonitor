@@ -8,6 +8,8 @@ const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const path = require('path');
 const { google } = require('googleapis');
+const speech = require('@google-cloud/speech');
+const nodemailer = require('nodemailer');
 
 // Simulated functions for each step
 async function fetchYouTubeVideos() {
@@ -82,24 +84,101 @@ async function uploadToGoogleDrive(mp3Path) {
   return link;
 }
 
+// Google Sheets append using service account
 async function storeInGoogleSheet(video, driveLink, transcript) {
-  // TODO: Use Google Sheets API to append row
-  console.log('Storing in Google Sheet:', { video, driveLink, transcript });
+  // Place your service account JSON in ./backend/service-account.json
+  const keyFile = path.join(__dirname, 'service-account.json');
+  if (!fs.existsSync(keyFile)) throw new Error('Google service account JSON not found.');
+  const auth = new google.auth.GoogleAuth({
+    keyFile,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+  const SHEET_ID = process.env.SHEET_ID || '1cbWLc5kK9MI8RTfYSoVSzNyYNL-L7qE1EnztlZzz3xg'; // <-- Set your Google Sheet ID here
+  const range = 'Sheet1!A:F'; // Adjust as needed
+  const values = [[
+    video.title,
+    video.url,
+    video.channel,
+    video.publishedAt,
+    driveLink,
+    transcript
+  ]];
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range,
+    valueInputOption: 'RAW',
+    requestBody: { values },
+  });
+  console.log('Appended row to Google Sheet:', values[0]);
 }
 
 async function transcribeAudio(mp3Path) {
-  // TODO: Use Google Speech-to-Text or OpenAI Whisper
-  return 'This is a simulated transcript of the video.';
+  // Use service account for authentication (already set up for Drive/Sheets)
+  const client = new speech.SpeechClient({
+    keyFilename: path.join(__dirname, 'service-account.json'),
+  });
+  const file = fs.readFileSync(mp3Path);
+  const audioBytes = file.toString('base64');
+  const audio = { content: audioBytes };
+  const config = {
+    encoding: 'MP3',
+    sampleRateHertz: 44100,
+    languageCode: 'en-US',
+  };
+  const request = { audio, config };
+  try {
+    const [response] = await client.recognize(request);
+    const transcript = response.results?.map(r => r.alternatives[0].transcript).join(' ') || '';
+    return transcript || 'No transcript available.';
+  } catch (err) {
+    console.error('Speech-to-Text error:', err.message);
+    return 'Transcription failed.';
+  }
 }
 
 async function summarizeTranscript(transcript) {
-  // TODO: Use OpenAI API to summarize
-  return 'This is a simulated summary of the transcript.';
+  const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyDjoopSWpStMoN7n2TQHRHBtz8z_WMWhFE';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+  try {
+    const res = await axios.post(url, {
+      contents: [{ parts: [{ text: `Summarize this transcript:
+${transcript}` }] }]
+    });
+    // Gemini API returns summary in res.data.candidates[0].content.parts[0].text
+    return res.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No summary available.';
+  } catch (err) {
+    console.error('Gemini API error:', err.response?.data || err.message);
+    return 'Summary failed.';
+  }
 }
 
 async function sendEmailToBrandTeam(summary) {
-  // TODO: Use SendGrid, Gmail API, or Nodemailer
-  console.log('Sending email to brand team:', summary);
+  // Configure these in your .env file
+  const {
+    SMTP_HOST = 'smtp.gmail.com',
+    SMTP_PORT = 465,
+    SMTP_USER,
+    SMTP_PASS,
+    BRAND_TEAM_EMAIL
+  } = process.env;
+  if (!SMTP_USER || !SMTP_PASS || !BRAND_TEAM_EMAIL) {
+    console.error('Missing SMTP or recipient config in .env');
+    return;
+  }
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: true,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+  await transporter.sendMail({
+    from: SMTP_USER,
+    to: BRAND_TEAM_EMAIL,
+    subject: 'YouTube Video Summary Report',
+    text: summary,
+  });
+  console.log('Summary email sent to brand team.');
 }
 
 // Main workflow
