@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Sparkles, Search } from "lucide-react";
 import { useRef } from "react";
+import clsx from "clsx";
 
 interface TrendingTopic {
   topic: string;
@@ -18,6 +19,55 @@ interface TrendingTopic {
   platforms: string[];
   engagement: number;
 }
+
+// Brand theme mapping
+const brandThemes: Record<string, { gradient: string; accent: string; icon: string }> = {
+  Nike: {
+    gradient: "from-[#111] to-[#4F8A10]", // black to Nike green
+    accent: "text-[#4F8A10]",
+    icon: "text-[#4F8A10]",
+  },
+  Adidas: {
+    gradient: "from-[#fff] to-[#1D428A]", // white to Adidas blue
+    accent: "text-[#1D428A]",
+    icon: "text-[#1D428A]",
+  },
+  Apple: {
+    gradient: "from-[#f5f5f7] to-[#a2aaad]", // Apple silver
+    accent: "text-[#a2aaad]",
+    icon: "text-[#a2aaad]",
+  },
+  Tesla: {
+    gradient: "from-[#e82127] to-[#111]", // Tesla red to black
+    accent: "text-[#e82127]",
+    icon: "text-[#e82127]",
+  },
+  Google: {
+    gradient: "from-[#4285F4] via-[#34A853] to-[#FBBC05]", // Google blue-green-yellow
+    accent: "text-[#4285F4]",
+    icon: "text-[#4285F4]",
+  },
+  Amazon: {
+    gradient: "from-[#FF9900] to-[#232F3E]", // Amazon orange to dark
+    accent: "text-[#FF9900]",
+    icon: "text-[#FF9900]",
+  },
+  Microsoft: {
+    gradient: "from-[#F25022] via-[#7FBA00] to-[#00A4EF]", // Microsoft orange-green-blue
+    accent: "text-[#00A4EF]",
+    icon: "text-[#00A4EF]",
+  },
+  "Coca-Cola": {
+    gradient: "from-[#F40009] to-[#fff]", // Coke red to white
+    accent: "text-[#F40009]",
+    icon: "text-[#F40009]",
+  },
+  Samsung: {
+    gradient: "from-[#1428A0] to-[#fff]", // Samsung blue to white
+    accent: "text-[#1428A0]",
+    icon: "text-[#1428A0]",
+  },
+};
 
 export const TrendingTopics = () => {
   const [brand, setBrand] = useState<string>("");
@@ -68,18 +118,30 @@ export const TrendingTopics = () => {
     inputRef.current?.blur();
   };
 
+  // Determine theme based on brand
+  const theme = brandThemes[brand] || {
+    gradient: "from-primary/10 to-secondary/30",
+    accent: "text-primary",
+    icon: "text-primary",
+  };
+
   return (
-    <Card className="p-8 shadow-2xl bg-gradient-to-br from-primary/10 to-secondary/30 rounded-3xl border-0 relative overflow-hidden animate-fade-in">
+    <Card
+      className={clsx(
+        "p-8 shadow-2xl rounded-3xl border-0 relative overflow-hidden animate-fade-in transition-all duration-700",
+        `bg-gradient-to-br ${theme.gradient}`
+      )}
+    >
       <div className="absolute -top-8 -right-8 opacity-20 pointer-events-none select-none">
-        <Sparkles className="w-32 h-32 text-primary animate-spin-slow" />
+        <Sparkles className={clsx("w-32 h-32 animate-spin-slow transition-colors duration-700", theme.icon)} />
       </div>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-3">
-          <Hash className="w-7 h-7 text-primary drop-shadow-lg animate-bounce" />
-          <h3 className="text-2xl font-extrabold text-foreground tracking-tight drop-shadow">Trending Topics</h3>
+          <Hash className={clsx("w-7 h-7 drop-shadow-lg animate-bounce transition-colors duration-700", theme.icon)} />
+          <h3 className={clsx("text-2xl font-extrabold tracking-tight drop-shadow transition-colors duration-700", theme.accent)}>Trending Topics</h3>
         </div>
         <div className="flex items-center space-x-2 text-base text-muted-foreground">
-          <Clock className="w-5 h-5 animate-pulse" />
+          <Clock className={clsx("w-5 h-5 animate-pulse transition-colors duration-700", theme.icon)} />
           <span>Last 48 hours</span>
         </div>
       </div>
