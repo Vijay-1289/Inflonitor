@@ -15,58 +15,7 @@ export async function fetchYouTubeTrends() {
   }));
 }
 
-// Instagram Trending Topics
-export async function fetchInstagramTrends() {
-  const url = "https://instagram120.p.rapidapi.com/api/instagram/hls";
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      'x-rapidapi-host': 'instagram120.p.rapidapi.com',
-      'x-rapidapi-key': '0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf',
-    },
-  });
-  if (!res.ok) throw new Error("Failed to fetch Instagram trends");
-  const data = await res.json();
-  // Normalize as needed; here we assume 'data' is an array of trending posts
-  return (data.data || []).slice(0, 10).map((item: any) => ({
-    topic: item.caption || item.username || "Instagram Trend",
-    mentions: Math.floor(Math.random() * 500), // Instagram API doesn't provide mentions
-    growth: Math.random() * 50,
-    sentiment: "neutral",
-    platforms: ["Instagram"],
-    engagement: Math.floor(Math.random() * 100),
-  }));
-}
-
-// LinkedIn Trending Topics
-export async function fetchLinkedInTrends() {
-  const url = "https://linkedin-data-scraper-api1.p.rapidapi.com/profile/posts?username=satyanadella&page_number=1";
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      'x-rapidapi-host': 'linkedin-data-scraper-api1.p.rapidapi.com',
-      'x-rapidapi-key': '0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf',
-    },
-  });
-  if (!res.ok) throw new Error("Failed to fetch LinkedIn trends");
-  const data = await res.json();
-  // Normalize as needed; here we assume 'data' is an array of posts
-  return (data.data || []).slice(0, 10).map((item: any) => ({
-    topic: item.text || item.title || "LinkedIn Trend",
-    mentions: Math.floor(Math.random() * 200),
-    growth: Math.random() * 50,
-    sentiment: "neutral",
-    platforms: ["LinkedIn"],
-    engagement: Math.floor(Math.random() * 100),
-  }));
-}
-
-// Fetch all trends in parallel and merge
+// Fetch all trends (YouTube only)
 export async function fetchAllTrends() {
-  const [yt, ig, li] = await Promise.all([
-    fetchYouTubeTrends().catch(() => []),
-    fetchInstagramTrends().catch(() => []),
-    fetchLinkedInTrends().catch(() => []),
-  ]);
-  return [...yt, ...ig, ...li];
+  return await fetchYouTubeTrends();
 } 
