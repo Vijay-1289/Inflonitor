@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { runWorkflow } = require('./workflow');
+const { runWorkflow } = require('./workflow.cjs');
 
 const app = express();
 app.use(cors());
