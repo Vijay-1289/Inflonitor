@@ -2,6 +2,8 @@ import { Hash, TrendingUp, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAllTrends } from "@/lib/trendApis";
 
 interface TrendingTopic {
   topic: string;
@@ -13,40 +15,10 @@ interface TrendingTopic {
 }
 
 export const TrendingTopics = () => {
-  const topics: TrendingTopic[] = [
-    {
-      topic: "Sustainable Fashion",
-      mentions: 342,
-      growth: 45.2,
-      sentiment: "positive",
-      platforms: ["Instagram", "TikTok"],
-      engagement: 87
-    },
-    {
-      topic: "AI Technology",
-      mentions: 289,
-      growth: 32.1,
-      sentiment: "positive",
-      platforms: ["LinkedIn", "Twitter"],
-      engagement: 73
-    },
-    {
-      topic: "Workout Routines",
-      mentions: 156,
-      growth: 18.7,
-      sentiment: "neutral",
-      platforms: ["Instagram", "YouTube"],
-      engagement: 65
-    },
-    {
-      topic: "Plant-based Diet",
-      mentions: 124,
-      growth: 12.3,
-      sentiment: "positive",
-      platforms: ["Instagram", "TikTok"],
-      engagement: 58
-    }
-  ];
+  const { data: topics, isLoading, isError } = useQuery({
+    queryKey: ["trending-topics"],
+    queryFn: fetchAllTrends,
+  });
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
@@ -69,8 +41,10 @@ export const TrendingTopics = () => {
         </div>
       </div>
 
+      {isLoading && <div className="text-center text-muted-foreground py-8">Loading trends...</div>}
+      {isError && <div className="text-center text-destructive py-8">Failed to load trends. Please try again later.</div>}
       <div className="space-y-4">
-        {topics.map((topic, index) => (
+        {topics && topics.map((topic: any, index: number) => (
           <div key={index} className="p-4 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
@@ -78,7 +52,7 @@ export const TrendingTopics = () => {
                 <h4 className="font-medium text-foreground">{topic.topic}</h4>
                 <div className="flex items-center space-x-1 text-success text-sm">
                   <TrendingUp className="w-3 h-3" />
-                  <span>+{topic.growth}%</span>
+                  <span>+{topic.growth?.toFixed(1) ?? 0}%</span>
                 </div>
               </div>
               <span className="text-sm text-muted-foreground">{topic.mentions} mentions</span>
@@ -86,7 +60,7 @@ export const TrendingTopics = () => {
             
             <div className="flex items-center justify-between mb-2">
               <div className="flex space-x-1">
-                {topic.platforms.map((platform) => (
+                {topic.platforms.map((platform: string) => (
                   <Badge key={platform} variant="outline" className="text-xs">
                     {platform}
                   </Badge>
