@@ -2,6 +2,9 @@ import { FileText, Calendar, Download, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAllTrends } from "@/lib/trendApis";
+import { saveAs } from "file-saver";
 
 interface Report {
   id: string;
@@ -15,48 +18,39 @@ interface Report {
 }
 
 export const RecentReports = () => {
-  const reports: Report[] = [
-    {
-      id: "1",
-      title: "Weekly Brand Monitoring Report",
-      date: "2024-01-15",
-      status: "completed",
-      insights: 23,
-      mentions: 456,
-      platforms: ["Instagram", "YouTube", "LinkedIn"],
-      type: "weekly"
-    },
-    {
-      id: "2",
-      title: "Sustainable Fashion Trend Alert",
-      date: "2024-01-14",
-      status: "completed",
-      insights: 8,
-      mentions: 127,
-      platforms: ["Instagram", "TikTok"],
-      type: "trend-alert"
-    },
-    {
-      id: "3",
-      title: "Competitor Analysis - Fashion Week",
-      date: "2024-01-13",
-      status: "processing",
-      insights: 0,
-      mentions: 89,
-      platforms: ["Instagram", "YouTube"],
-      type: "competitive"
-    },
-    {
-      id: "4",
-      title: "Weekly Brand Monitoring Report",
-      date: "2024-01-17",
-      status: "scheduled",
-      insights: 0,
-      mentions: 0,
-      platforms: ["Instagram", "YouTube", "LinkedIn"],
-      type: "weekly"
-    }
-  ];
+  const { data: trends, isLoading, isError } = useQuery({
+    queryKey: ["recent-trends-report"],
+    queryFn: fetchAllTrends,
+    refetchInterval: 1000 * 60 * 60 * 48, // 48 hours
+  });
+
+  // Generate a summary reason for each trend (placeholder logic)
+  const getReason = (topic: any) => {
+    if (topic.growth > 30) return "Rapid growth due to viral content or news.";
+    if (topic.sentiment === "positive") return "Positive sentiment driving engagement.";
+    if (topic.platforms.includes("LinkedIn")) return "Professional discussions boosting visibility.";
+    return "Consistent engagement across platforms.";
+  };
+
+  // Download report as CSV
+  const downloadReport = () => {
+    if (!trends) return;
+    const header = "Topic,Platforms,Mentions,Growth (%),Engagement (%),Sentiment,Reason\n";
+    const rows = trends.map((t: any) =>
+      [
+        `"${t.topic.replace(/"/g, '""')}"`,
+        t.platforms.join("/"),
+        t.mentions,
+        t.growth?.toFixed(1) ?? 0,
+        t.engagement,
+        t.sentiment,
+        `"${getReason(t)}"`
+      ].join(",")
+    );
+    const csv = header + rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `trends-report-${new Date().toISOString().slice(0,10)}.csv`);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -81,62 +75,29 @@ export const RecentReports = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <FileText className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Recent Reports</h3>
+          <h3 className="text-lg font-semibold text-foreground">Recent Trend Reports</h3>
         </div>
-        <Button variant="outline" size="sm">
-          View All Reports
+        <Button variant="outline" size="sm" onClick={downloadReport} disabled={!trends || isLoading}>
+          <Download className="w-4 h-4 mr-2" />
+          Download CSV
         </Button>
       </div>
-
+      {isLoading && <div className="text-center text-muted-foreground py-8">Generating report...</div>}
+      {isError && <div className="text-center text-destructive py-8">Failed to generate report. Please try again later.</div>}
       <div className="space-y-4">
-        {reports.map((report) => (
-          <div key={report.id} className="p-4 bg-secondary/20 rounded-lg hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <span className="text-lg">{getTypeIcon(report.type)}</span>
-                <div>
-                  <h4 className="font-medium text-foreground">{report.title}</h4>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{report.date}</span>
-                  </div>
-                </div>
-              </div>
-              <Badge className={getStatusColor(report.status)}>
-                {report.status}
-              </Badge>
+        {trends && trends.map((trend: any, idx: number) => (
+          <div key={idx} className="p-4 bg-secondary/20 rounded-lg hover:bg-secondary/40 transition-colors">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-foreground">{trend.topic}</h4>
+              <span className="text-xs text-muted-foreground">{trend.platforms.join(", ")}</span>
             </div>
-
-            {report.status === "completed" && (
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex space-x-4">
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-foreground">{report.insights}</p>
-                    <p className="text-xs text-muted-foreground">Insights</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-foreground">{report.mentions}</p>
-                    <p className="text-xs text-muted-foreground">Mentions</p>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex space-x-1">
-              {report.platforms.map((platform) => (
-                <Badge key={platform} variant="outline" className="text-xs">
-                  {platform}
-                </Badge>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground">Mentions: {trend.mentions}</span>
+              <span className="text-xs text-muted-foreground">Growth: {trend.growth?.toFixed(1) ?? 0}%</span>
+              <span className="text-xs text-muted-foreground">Engagement: {trend.engagement}%</span>
+              <span className="text-xs text-muted-foreground">Sentiment: {trend.sentiment}</span>
             </div>
+            <div className="text-xs text-info-foreground mt-1">Reason: {getReason(trend)}</div>
           </div>
         ))}
       </div>
