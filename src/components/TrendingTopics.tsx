@@ -16,16 +16,18 @@ const getSentimentColor = (sentiment: string) => {
   }
 };
 
+const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?name=User&background=random';
+
 export const TrendingTopics = () => {
-  const { data: ytTrends, isLoading: ytLoading } = useQuery({
+  const { data: ytTrends, isLoading: ytLoading, isError: ytError } = useQuery({
     queryKey: ["youtube-trends"],
     queryFn: fetchYouTubeTrends,
   });
-  const { data: igTrends, isLoading: igLoading } = useQuery({
+  const { data: igTrends, isLoading: igLoading, isError: igError } = useQuery({
     queryKey: ["instagram-trends"],
     queryFn: fetchInstagramTrends,
   });
-  const { data: liTrends, isLoading: liLoading } = useQuery({
+  const { data: liTrends, isLoading: liLoading, isError: liError } = useQuery({
     queryKey: ["linkedin-trends"],
     queryFn: fetchLinkedInTrends,
   });
@@ -48,6 +50,7 @@ export const TrendingTopics = () => {
         <Card className="p-4 md:p-8 bg-gradient-to-br from-[#ff0000]/10 to-[#fff] rounded-2xl shadow-lg border-0">
           <h3 className="text-xl font-extrabold tracking-tight text-[#ff0000] mb-4 flex items-center gap-2"><Youtube className="w-6 h-6" /> YouTube Trends</h3>
           {ytLoading && <div className="text-center text-muted-foreground py-8">Loading...</div>}
+          {ytError && <div className="text-center text-destructive py-8">Failed to load YouTube trends. Please try again later.</div>}
           <div className="space-y-4">
             {ytTrends && ytTrends.map((topic: any, idx: number) => (
               <div key={idx} className="p-4 bg-white/80 rounded-lg shadow hover:shadow-md transition flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -66,7 +69,7 @@ export const TrendingTopics = () => {
                 {topic.influencer && (
                   <div className="flex items-center gap-4 mt-4 md:mt-0 bg-[#ff0000]/5 rounded-xl p-3 w-full md:w-auto">
                     <Avatar className="w-14 h-14 border-2 border-[#ff0000]">
-                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarImage src={topic.influencer.avatar || PLACEHOLDER_AVATAR} alt={topic.influencer.name} onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)} />
                       <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -85,6 +88,7 @@ export const TrendingTopics = () => {
         <Card className="p-4 md:p-8 bg-gradient-to-br from-[#0077b5]/10 to-[#fff] rounded-2xl shadow-lg border-0">
           <h3 className="text-xl font-extrabold tracking-tight text-[#0077b5] mb-4 flex items-center gap-2"><Linkedin className="w-6 h-6" /> LinkedIn Trends & Influencers</h3>
           {liLoading && <div className="text-center text-muted-foreground py-8">Loading...</div>}
+          {liError && <div className="text-center text-destructive py-8">Failed to load LinkedIn trends. Please try again later.</div>}
           <div className="space-y-4">
             {liTrends && liTrends.map((topic: any, idx: number) => (
               <div key={idx} className="p-4 bg-white/80 rounded-lg shadow hover:shadow-md transition flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -103,7 +107,7 @@ export const TrendingTopics = () => {
                 {topic.influencer && (
                   <div className="flex flex-col md:flex-row items-center gap-4 mt-4 md:mt-0 bg-[#0077b5]/5 rounded-xl p-3 w-full md:w-auto">
                     <Avatar className="w-14 h-14 border-2 border-[#0077b5]">
-                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarImage src={topic.influencer.avatar || PLACEHOLDER_AVATAR} alt={topic.influencer.name} onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)} />
                       <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
@@ -130,6 +134,7 @@ export const TrendingTopics = () => {
         <Card className="p-4 md:p-8 bg-gradient-to-br from-[#e1306c]/10 to-[#fff] rounded-2xl shadow-lg border-0">
           <h3 className="text-xl font-extrabold tracking-tight text-[#e1306c] mb-4 flex items-center gap-2"><Instagram className="w-6 h-6" /> Instagram Trends & Influencers</h3>
           {igLoading && <div className="text-center text-muted-foreground py-8">Loading...</div>}
+          {igError && <div className="text-center text-destructive py-8">Failed to load Instagram trends. Please try again later.</div>}
           <div className="space-y-4">
             {igTrends && igTrends.map((topic: any, idx: number) => (
               <div key={idx} className="p-4 bg-white/80 rounded-lg shadow hover:shadow-md transition flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -148,7 +153,7 @@ export const TrendingTopics = () => {
                 {topic.influencer && (
                   <div className="flex flex-col md:flex-row items-center gap-4 mt-4 md:mt-0 bg-[#e1306c]/5 rounded-xl p-3 w-full md:w-auto">
                     <Avatar className="w-16 h-16 border-4 border-gradient-to-tr from-[#e1306c] via-[#fdc468] to-[#fa7e1e]">
-                      <AvatarImage src={topic.influencer.avatar} alt={topic.influencer.name} />
+                      <AvatarImage src={topic.influencer.avatar || PLACEHOLDER_AVATAR} alt={topic.influencer.name} onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)} />
                       <AvatarFallback>{topic.influencer.name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
@@ -159,7 +164,7 @@ export const TrendingTopics = () => {
                         <div className="font-semibold text-xs mb-1">Recent Posts:</div>
                         <div className="grid grid-cols-3 gap-1">
                           {topic.influencer.posts?.slice(0, 3).map((img: string, i: number) => (
-                            <img key={i} src={img} alt="post" className="rounded-lg w-16 h-16 object-cover" />
+                            <img key={i} src={img} alt="post" className="rounded-lg w-16 h-16 object-cover" onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)} />
                           ))}
                         </div>
                       </div>
