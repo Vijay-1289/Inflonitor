@@ -1,106 +1,51 @@
-import { FileText, Calendar, Download, Eye } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { FileText, Download } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAllTrends } from "@/lib/trendApis";
-import { saveAs } from "file-saver";
 
-interface Report {
-  id: string;
-  title: string;
-  date: string;
-  status: "completed" | "processing" | "scheduled";
-  insights: number;
-  mentions: number;
-  platforms: string[];
-  type: "weekly" | "trend-alert" | "competitive";
-}
+const reports = [
+  { title: "1 Progressive vs 20 Far-Right Conservatives (ft. Mehdi Hasan)", mentions: 42810, growth: "17.3%", engagement: "4%", sentiment: "neutral", platform: "YouTube" },
+  { title: "Survive 100 Days Trapped In A Private Jet, Keep It", mentions: 32399, growth: "34.7%", engagement: "3%", sentiment: "neutral", platform: "YouTube" },
+  { title: "Pacquiao vs Barrios HIGHLIGHTS: July 19, 2025 | PBC on Prime Video PPV", mentions: 5456, growth: "17.4%", engagement: "1%", sentiment: "neutral", platform: "YouTube" },
+  { title: "AJ Styles Returns To TNA After 11 Years | TNA Slammiversary 2025 Highlights", mentions: 2810, growth: "22.2%", engagement: "4%", sentiment: "neutral", platform: "YouTube" },
+  { title: "ATTEMPTING TO START THE FLOODED ASTON MARTIN DBX THAT I BOUGHT MY DAD", mentions: 5280, growth: "28.6%", engagement: "8%", sentiment: "neutral", platform: "YouTube" },
+  { title: "FULL FIGHT HIGHLIGHTS | Manny Pacquiao vs Mario Barrios | Prime Video PPV", mentions: 4145, growth: "9.8%", engagement: "1%", sentiment: "neutral", platform: "YouTube" },
+  { title: "THE HARDEST STEAK CHALLENGE I'VE DONE IN YEARS! | BeardMeatsFood", mentions: 5630, growth: "5.8%", engagement: "8%", sentiment: "neutral", platform: "YouTube" },
+  { title: "I Bought An Abandoned Storage Unit and Made $____", mentions: 4737, growth: "8.5%", engagement: "3%", sentiment: "neutral", platform: "YouTube" },
+  { title: "Max Holloway vs Dustin Poirier 3 - FULL FIGHT RECAP", mentions: 1615, growth: "19.2%", engagement: "8%", sentiment: "neutral", platform: "YouTube" },
+  { title: "FULL FIGHT HIGHLIGHTS | Isaac Cruz vs Omar Salcido | Prime Video PPV", mentions: 1155, growth: "9.1%", engagement: "1%", sentiment: "neutral", platform: "YouTube" },
+];
 
-export const RecentReports = () => {
-  const { data: trends, isLoading, isError } = useQuery({
-    queryKey: ["recent-trends-report"],
-    queryFn: fetchAllTrends,
-    refetchInterval: 1000 * 60 * 60 * 48, // 48 hours
-  });
-
-  // Generate a summary reason for each trend (placeholder logic)
-  const getReason = (topic: any) => {
-    if (topic.growth > 30) return "Rapid growth due to viral content or news.";
-    if (topic.sentiment === "positive") return "Positive sentiment driving engagement.";
-    if (topic.platforms.includes("LinkedIn")) return "Professional discussions boosting visibility.";
-    return "Consistent engagement across platforms.";
-  };
-
-  // Download report as CSV
-  const downloadReport = () => {
-    if (!trends) return;
-    const header = "Topic,Platforms,Mentions,Growth (%),Engagement (%),Sentiment,Reason\n";
-    const rows = trends.map((t: any) =>
-      [
-        `"${t.topic.replace(/"/g, '""')}"`,
-        t.platforms.join("/"),
-        t.mentions,
-        t.growth?.toFixed(1) ?? 0,
-        t.engagement,
-        t.sentiment,
-        `"${getReason(t)}"`
-      ].join(",")
-    );
-    const csv = header + rows.join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, `trends-report-${new Date().toISOString().slice(0,10)}.csv`);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "bg-success text-success-foreground";
-      case "processing": return "bg-warning text-warning-foreground";
-      case "scheduled": return "bg-info text-info-foreground";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "weekly": return "📊";
-      case "trend-alert": return "🔥";
-      case "competitive": return "⚔️";
-      default: return "📄";
-    }
-  };
-
-  return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
+export const RecentReports = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <FileText className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Recent Trend Reports</h3>
+          <FileText className="w-5 h-5" />
+          <CardTitle>Recent Trend Reports</CardTitle>
         </div>
-        <Button variant="outline" size="sm" onClick={downloadReport} disabled={!trends || isLoading}>
+        <Button variant="outline" size="sm">
           <Download className="w-4 h-4 mr-2" />
           Download CSV
         </Button>
       </div>
-      {isLoading && <div className="text-center text-muted-foreground py-8">Generating report...</div>}
-      {isError && <div className="text-center text-destructive py-8">Failed to generate report. Please try again later.</div>}
+    </CardHeader>
+    <CardContent>
       <div className="space-y-4">
-        {trends && trends.map((trend: any, idx: number) => (
-          <div key={idx} className="p-4 bg-secondary/20 rounded-lg hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-foreground">{trend.topic}</h4>
-              <span className="text-xs text-muted-foreground">{trend.platforms.join(", ")}</span>
+        {reports.map((report, index) => (
+          <div key={index} className="flex justify-between items-center">
+            <div>
+              <p className="font-medium">{report.title}</p>
+              <div className="flex space-x-4 text-sm text-gray-500">
+                <span>Mentions: {report.mentions}</span>
+                <span>Growth: {report.growth}</span>
+                <span>Engagement: {report.engagement}</span>
+                <span>Sentiment: {report.sentiment}</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground">Mentions: {trend.mentions}</span>
-              <span className="text-xs text-muted-foreground">Growth: {trend.growth?.toFixed(1) ?? 0}%</span>
-              <span className="text-xs text-muted-foreground">Engagement: {trend.engagement}%</span>
-              <span className="text-xs text-muted-foreground">Sentiment: {trend.sentiment}</span>
-            </div>
-            <div className="text-xs text-info-foreground mt-1">Reason: {getReason(trend)}</div>
+            <span className="text-sm text-gray-500">{report.platform}</span>
           </div>
         ))}
       </div>
-    </Card>
-  );
-};
+    </CardContent>
+  </Card>
+); 
