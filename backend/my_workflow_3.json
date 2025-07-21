@@ -1,0 +1,584 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "65b55b1c-d739-4619-8f8a-a18076640536",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search?key=AIzaSyAM5dgzO6-LRXLC8__Ceys2KnyDukEPWrQ&channelId=UCX6OQ3DkcsbYNE6H8uQQuVA&part=snippet,id&order=date&maxResults=5",
+        "options": {}
+      },
+      "id": "2f774bd2-0f8c-4b01-8209-158371732761",
+      "name": "MidRent - Fetch Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract videoId and title\nreturn items.map(item => {\n  const video = item.json.items[0];\n  return { json: {\n    videoId: video.id.videoId,\n    title: video.snippet.title,\n    url: `https://www.youtube.com/watch?v=${video.id.videoId}`\n  }};\n});"
+      },
+      "id": "a6ac74d0-0b18-47cb-899d-fd36e210c79f",
+      "name": "MidRent - Extract Info",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "YouTubeURL",
+              "value": "={{$json[\"url\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d12d5e7b-7180-4407-8aad-6216994cf948",
+      "name": "Read YouTube Links",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://youtube-mp36.p.rapidapi.com/dl?id=EiFcNbXBqeo",
+        "responseFormat": "={\n  \"url\": \"https://www.youtube.com/watch?v=EiFcNbXBqeo\"\n}",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "youtube-mp36.p.rapidapi.com"
+            }
+          ]
+        }
+      },
+      "id": "756b1dc9-7393-42d2-968f-24039a301b1a",
+      "name": "Convert YouTube to MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        160
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "fileContent": "={ {$json[\"audioUrl\"]} }",
+        "name": "invoice",
+        "options": {}
+      },
+      "id": "ec59bfcb-27b8-4ea7-9b8a-afc624a3c0a4",
+      "name": "Upload to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        160
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6ncR0QtI4wyHxPmX",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1mbS9KgNxRt2EFBGIux5NpvDNC_Uz3b_b0gQQ-V0-EmY",
+        "range": "Sheet1!A1:B",
+        "options": {}
+      },
+      "id": "378ef436-6815-440e-b386-85a3c1cc0655",
+      "name": "Store Drive Link in Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        160
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "USxCW8tRNnFZjegT",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://media2text.p.rapidapi.com/",
+        "responseFormat": "={\n  \"file_url\": \"https://gamma.123tokyo.xyz/get.php/b/c1/EiFcNbXBqeo.mp3?n=Jet%20Engine%20vs%20Human%20for%20_10k&uT=R&uN=VmlqYXkxMjg5&h=BGFvU7AXKgw2P0A9WwIwpQ&s=1753111335&uT=R&uN=VmlqYXkxMjg5\",\n  \"api_key\": \"0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf\"\n}",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "x-rapidapi-key",
+              "value": "0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "media2text.p.rapidapi.com"
+            }
+          ]
+        }
+      },
+      "id": "d4446c99-9cce-4de8-9fda-a9d58e2b870d",
+      "name": "GSpeech API - Speech to Text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        16,
+        160
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1mbS9KgNxRt2EFBGIux5NpvDNC_Uz3b_b0gQQ-V0-EmY",
+        "range": "Sheet1!C1:D",
+        "options": {}
+      },
+      "id": "f5a93d4e-25af-49c3-92a7-88722a95575d",
+      "name": "Store Transcript in Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        256,
+        256
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "USxCW8tRNnFZjegT",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "38f4d3ba-6ac2-4733-aff9-e9748d906db5",
+      "name": "ChatGPT Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        448,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "your_email@gmail.com",
+        "toEmail": "brandteam@example.com",
+        "subject": "Video Summary",
+        "text": "={{$json.choices[0].message.content}}",
+        "options": {}
+      },
+      "id": "31d7e00b-d036-42f9-8187-f1a1436a915a",
+      "name": "Email to Brand Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        656,
+        256
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "2Wgf6eOLCAJCQ9pK",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search?key=AIzaSyAM5dgzO6-LRXLC8__Ceys2KnyDukEPWrQ&channelId=UCX6OQ3DkcsbYNE6H8uQQuVA&part=snippet,id&order=date&maxResults=5",
+        "options": {}
+      },
+      "id": "74c464dd-f5d9-4838-928d-537f14e9ce71",
+      "name": "MidRent - Fetch Video1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract videoId and title\nreturn items.map(item => {\n  const video = item.json.items[0];\n  return { json: {\n    videoId: video.id.videoId,\n    title: video.snippet.title,\n    url: `https://www.youtube.com/watch?v=${video.id.videoId}`\n  }};\n});"
+      },
+      "id": "bbc8cd36-7133-44e5-b432-32df1a9c06e2",
+      "name": "MidRent - Extract Info1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "YouTubeURL",
+              "value": "={{$json[\"url\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "31463a99-d6d5-43e2-8d02-638f306d829b",
+      "name": "Read YouTube Links1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://youtube-mp36.p.rapidapi.com/dl",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "0bb79fc647msh9d7d11c2803c88ap1d489bjsnc6834f6ec4cf"
+            },
+            {
+              "name": "X-RapidAPI-Host",
+              "value": "youtube-mp36.p.rapidapi.com"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "id",
+              "value": "{ {1.videoId} }"
+            }
+          ]
+        }
+      },
+      "id": "5b920d67-5d2f-43e4-aa37-89bff52eac68",
+      "name": "Convert YouTube to MP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "fileContent": "={ {$json[\"audioUrl\"]} }",
+        "name": "invoice",
+        "options": {}
+      },
+      "id": "93e748e1-464f-41e6-819e-c976af618fd2",
+      "name": "Upload to Google Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        368
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6ncR0QtI4wyHxPmX",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1mbS9KgNxRt2EFBGIux5NpvDNC_Uz3b_b0gQQ-V0-EmY",
+        "range": "Sheet1!A1:B",
+        "options": {}
+      },
+      "id": "343bb919-0e90-4300-8ecc-e3f351b6be3c",
+      "name": "Store Drive Link in Sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        368
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "USxCW8tRNnFZjegT",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.example.com/speech-to-text",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "38d78e0b-c816-49f1-8a26-340510cf9f1e",
+      "name": "GSpeech API - Speech to Text1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        16,
+        368
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "MidRent - Fetch Video",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MidRent - Fetch Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MidRent - Fetch Video": {
+      "main": [
+        [
+          {
+            "node": "MidRent - Extract Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MidRent - Extract Info": {
+      "main": [
+        [
+          {
+            "node": "Read YouTube Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read YouTube Links": {
+      "main": [
+        [
+          {
+            "node": "Convert YouTube to MP3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert YouTube to MP3": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Store Drive Link in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Drive Link in Sheet": {
+      "main": [
+        [
+          {
+            "node": "GSpeech API - Speech to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSpeech API - Speech to Text": {
+      "main": [
+        [
+          {
+            "node": "Store Transcript in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Transcript in Sheet": {
+      "main": [
+        [
+          {
+            "node": "ChatGPT Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT Summary": {
+      "main": [
+        [
+          {
+            "node": "Email to Brand Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MidRent - Fetch Video1": {
+      "main": [
+        [
+          {
+            "node": "MidRent - Extract Info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MidRent - Extract Info1": {
+      "main": [
+        [
+          {
+            "node": "Read YouTube Links1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read YouTube Links1": {
+      "main": [
+        [
+          {
+            "node": "Convert YouTube to MP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert YouTube to MP": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Store Drive Link in Sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Drive Link in Sheet1": {
+      "main": [
+        [
+          {
+            "node": "GSpeech API - Speech to Text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSpeech API - Speech to Text1": {
+      "main": [
+        [
+          {
+            "node": "Store Transcript in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "61040222-fbcf-45f9-acce-9f924ad46f3a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b6fc0c5471642e3aa6ca75ba6ce95708966c69db796d67eb8037e1ca793f1c69"
+  },
+  "id": "VHtmBlNcARi5yWzB",
+  "tags": []
+} 
